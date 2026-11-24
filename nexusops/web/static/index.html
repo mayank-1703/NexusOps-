@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NexusOps | Autonomous AI Infrastructure Control Plane</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-layout">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="brand-logo">⚡</div>
+                <div class="brand-info">
+                    <h2>NexusOps</h2>
+                    <span class="badge badge-primary">MCP Control Plane</span>
+                </div>
+            </div>
+
+            <nav class="nav-menu">
+                <button class="nav-item active" data-tab="tab-overview">
+                    <span class="icon">📊</span> Overview & Metrics
+                </button>
+                <button class="nav-item" data-tab="tab-approvals">
+                    <span class="icon">🛡️</span> Human Approvals
+                    <span id="nav-pending-badge" class="badge badge-warning count-badge">0</span>
+                </button>
+                <button class="nav-item" data-tab="tab-containers">
+                    <span class="icon">🐳</span> Containers & Services
+                </button>
+                <button class="nav-item" data-tab="tab-tools">
+                    <span class="icon">🛠️</span> MCP Tool Explorer
+                </button>
+                <button class="nav-item" data-tab="tab-audit">
+                    <span class="icon">📜</span> Audit Logs
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="status-indicator">
+                    <span class="pulse-dot"></span>
+                    <span>MCP JSON-RPC 2.0 Live</span>
+                </div>
+                <div class="api-target">
+                    <code>POST /mcp</code> | <code>GET /sse</code>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Header Bar -->
+            <header class="topbar">
+                <div class="topbar-title">
+                    <h1 id="page-title">Infrastructure Overview</h1>
+                    <p class="subtitle">Autonomous AI Agent Control Plane & Remediation Gateway</p>
+                </div>
+                <div class="topbar-actions">
+                    <button class="btn btn-secondary btn-sm" id="btn-refresh">🔄 Refresh</button>
+                    <button class="btn btn-outline btn-sm" id="btn-reset-mock">⚠️ Reset Mock State</button>
+                </div>
+            </header>
+
+            <!-- Tab: Overview -->
+            <section id="tab-overview" class="tab-pane active">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-label">Active MCP Tools</span>
+                            <span class="stat-icon">🔧</span>
+                        </div>
+                        <div class="stat-value" id="stat-total-tools">11</div>
+                        <div class="stat-footer">Dynamic discovery enabled</div>
+                    </div>
+                    <div class="stat-card stat-alert">
+                        <div class="stat-header">
+                            <span class="stat-label">Pending Approvals</span>
+                            <span class="stat-icon">⏳</span>
+                        </div>
+                        <div class="stat-value" id="stat-pending-approvals">0</div>
+                        <div class="stat-footer">Human-in-the-Loop review queue</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-label">Managed Microservices</span>
+                            <span class="stat-icon">📦</span>
+                        </div>
+                        <div class="stat-value" id="stat-containers-count">4</div>
+                        <div class="stat-footer" id="stat-containers-unhealthy">1 unhealthy, 1 crashloop</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-label">Uptime & Node Status</span>
+                            <span class="stat-icon">⏱️</span>
+                        </div>
+                        <div class="stat-value" id="stat-uptime">0s</div>
+                        <div class="stat-footer">Multi-server orchestrator ready</div>
+                    </div>
+                </div>
+
+                <div class="content-row">
+                    <div class="card flex-2">
+                        <div class="card-header">
+                            <h3>Architecture & Protocol Flow</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="arch-flow">
+                                <div class="flow-step">
+                                    <div class="flow-title">AI Agents</div>
+                                    <div class="flow-desc">Claude / Autonomous Agents</div>
+                                </div>
+                                <div class="flow-arrow">⇄ JSON-RPC 2.0 ⇄</div>
+                                <div class="flow-step highlight">
+                                    <div class="flow-title">NexusOps Control Plane</div>
+                                    <div class="flow-desc">RBAC • HITL • Orchestrator</div>
+                                </div>
+                                <div class="flow-arrow">⇄ Tool Execution ⇄</div>
+                                <div class="flow-step">
+                                    <div class="flow-title">Target Infrastructure</div>
+                                    <div class="flow-desc">Docker • Host • Cloud • K8s</div>
+                                </div>
+                            </div>
+                            <p class="text-muted mt-3">
+                                Standardized Model Context Protocol (MCP) server exposing tools, resources, and runbook prompts. High-risk operations are classified into safety tiers and intercepted for Human-in-the-Loop approval.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="card flex-1">
+                        <div class="card-header">
+                            <h3>Active System Metrics</h3>
+                        </div>
+                        <div class="card-body" id="system-metrics-container">
+                            <div class="loading-spinner">Loading metrics...</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tab: Approvals Queue -->
+            <section id="tab-approvals" class="tab-pane">
+                <div class="card">
+                    <div class="card-header flex-between">
+                        <div>
+                            <h3>Human-in-the-Loop Approval Queue</h3>
+                            <p class="text-muted">High-risk infrastructure operations intercepted for human review.</p>
+                        </div>
+                        <div class="filters">
+                            <select id="approval-status-filter" class="form-select">
+                                <option value="">All Statuses</option>
+                                <option value="pending" selected>Pending Review</option>
+                                <option value="approved">Approved</option>
+                                <option value="rejected">Rejected</option>
+                                <option value="executed">Executed</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div id="approvals-list-container">
+                            <!-- Injected dynamically -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tab: Containers -->
+            <section id="tab-containers" class="tab-pane">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Managed Infrastructure Services</h3>
+                        <p class="text-muted">Target containers and services monitored by NexusOps.</p>
+                    </div>
+                    <div class="card-body">
+                        <div class="containers-grid" id="containers-list-container">
+                            <!-- Injected dynamically -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tab: Tools Explorer -->
+            <section id="tab-tools" class="tab-pane">
+                <div class="content-row">
+                    <div class="card flex-1">
+                        <div class="card-header">
+                            <h3>Registered MCP Tools</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="tools-list" id="tools-list-container">
+                                <!-- Injected dynamically -->
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card flex-1">
+                        <div class="card-header">
+                            <h3>Test MCP Tool Execution</h3>
+                        </div>
+                        <div class="card-body">
+                            <form id="tool-test-form">
+                                <div class="form-group">
+                                    <label>Selected Tool</label>
+                                    <input type="text" id="test-tool-name" class="form-input" readonly placeholder="Click a tool on the left">
+                                </div>
+                                <div class="form-group">
+                                    <label>JSON Arguments</label>
+                                    <textarea id="test-tool-args" class="form-textarea" rows="4">{}</textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label>Caller Role</label>
+                                    <select id="test-tool-role" class="form-select">
+                                        <option value="nexus-admin-secret-key-12345">Admin (Full Access)</option>
+                                        <option value="nexus-operator-secret-key-67890">Operator (Safe + Moderate)</option>
+                                        <option value="nexus-readonly-secret-key-abcde">Readonly (Safe Only)</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-primary" id="btn-run-tool">Execute Tool via MCP</button>
+                            </form>
+                            <div class="mt-4">
+                                <label>Tool Output:</label>
+                                <pre id="test-tool-output" class="code-block">Awaiting execution...</pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tab: Audit Logs -->
+            <section id="tab-audit" class="tab-pane">
+                <div class="card">
+                    <div class="card-header flex-between">
+                        <div>
+                            <h3>Operational Audit Trail</h3>
+                            <p class="text-muted">Immutable log of all AI agent interactions, remediation steps, and authorizations.</p>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Timestamp</th>
+                                        <th>Requester</th>
+                                        <th>Role</th>
+                                        <th>Tool</th>
+                                        <th>Status</th>
+                                        <th>Duration</th>
+                                        <th>Details</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="audit-logs-tbody">
+                                    <!-- Injected dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal for Approval Decision -->
+    <div id="decision-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">Review Action</h3>
+                <button class="modal-close" id="modal-close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="modal-desc"></p>
+                <div class="form-group mt-3">
+                    <label>Reviewer Identity</label>
+                    <input type="text" id="modal-approver-name" class="form-input" value="lead-devops-engineer">
+                </div>
+                <div class="form-group mt-2">
+                    <label>Decision Reason / Note</label>
+                    <input type="text" id="modal-note" class="form-input" placeholder="e.g. Approved during incident triage.">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="modal-cancel-btn">Cancel</button>
+                <button class="btn btn-success" id="modal-confirm-btn">Confirm Decision</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>

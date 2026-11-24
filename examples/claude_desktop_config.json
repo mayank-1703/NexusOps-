@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "nexusops-local": {
+      "command": "python",
+      "args": ["-m", "nexusops.main", "--stdio"],
+      "env": {
+        "NEXUSOPS_ADMIN_API_KEY": "nexus-admin-secret-key-12345"
+      }
+    },
+    "nexusops-remote": {
+      "url": "http://127.0.0.1:8000/sse",
+      "headers": {
+        "Authorization": "Bearer nexus-admin-secret-key-12345"
+      }
+    }
+  }
+}

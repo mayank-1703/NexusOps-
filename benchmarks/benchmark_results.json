@@ -1,0 +1,19 @@
+{
+  "tool_discovery_p50_ms": 0.28,
+  "tool_discovery_p95_ms": 0.31,
+  "tool_discovery_p99_ms": 0.41,
+  "tool_discovery_rps": 3528.4,
+  "sequential_duration_ms": 767.86,
+  "concurrent_duration_ms": 208.56,
+  "concurrency_speedup_ratio": 3.68,
+  "concurrent_task_count": 12,
+  "autonomous_triage_mttr_ms": 4.34,
+  "log_anomaly_extraction_ms": 1.61,
+  "remediation_execution_ms": 0.99,
+  "fault_isolation_rate_pct": 100.0,
+  "circuit_breaker_fail_fast_ms": 0.013,
+  "chaos_tasks_total": 20,
+  "chaos_tasks_survived": 14,
+  "rbac_interception_rate_pct": 100.0,
+  "hitl_pause_rate_pct": 100.0
+}

@@ -1,0 +1,39 @@
+services:
+  nexusops:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nexusops-control-plane
+    ports:
+      - "8000:8000"
+    environment:
+      - NEXUSOPS_HOST=0.0.0.0
+      - NEXUSOPS_PORT=8000
+      - NEXUSOPS_DEBUG=false
+      - NEXUSOPS_ADMIN_API_KEY=nexus-admin-secret-key-12345
+      - NEXUSOPS_OPERATOR_API_KEY=nexus-operator-secret-key-67890
+      - NEXUSOPS_READONLY_API_KEY=nexus-readonly-secret-key-abcde
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/status')"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+  # Target infrastructure service: Redis cache (for monitoring & remediation demo)
+  nexus-redis:
+    image: redis:7.2-alpine
+    container_name: nexus-redis-cache
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
+  # Target infrastructure service: Nginx gateway
+  nexus-gateway:
+    image: nginx:1.25-alpine
+    container_name: nexus-api-gateway
+    ports:
+      - "8080:80"
+    restart: unless-stopped
